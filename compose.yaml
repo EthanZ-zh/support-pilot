@@ -1,0 +1,67 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SUPPORT_PILOT_DATABASE_URL: postgresql+psycopg://support_pilot:support_pilot@postgres:5432/support_pilot
+      SUPPORT_PILOT_AGENT_PROVIDER: deterministic
+      SUPPORT_PILOT_RETRIEVAL_PROVIDER: deterministic
+      SUPPORT_PILOT_JWT_SECRET: ${SUPPORT_PILOT_JWT_SECRET:-}
+      SUPPORT_PILOT_OTEL_ENABLED: ${SUPPORT_PILOT_OTEL_ENABLED:-false}
+      SUPPORT_PILOT_OTEL_EXPORTER_OTLP_ENDPOINT: ${SUPPORT_PILOT_OTEL_EXPORTER_OTLP_ENDPOINT:-http://host.docker.internal:4318/v1/traces}
+    command: ["sh", "-c", "uv run alembic upgrade head && uv run python scripts/seed.py && uv run python scripts/ingest_knowledge.py --provider deterministic && uv run uvicorn support_pilot.main:app --host 0.0.0.0 --port 8000"]
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/ready')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  postgres:
+    image: pgvector/pgvector:0.8.6-pg16-trixie
+    environment:
+      POSTGRES_DB: support_pilot
+      POSTGRES_USER: support_pilot
+      POSTGRES_PASSWORD: support_pilot
+    ports:
+      - "54329:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U support_pilot -d support_pilot"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - support_pilot_postgres_data:/var/lib/postgresql/data
+
+  postgres-test:
+    image: pgvector/pgvector:0.8.6-pg16-trixie
+    environment:
+      POSTGRES_DB: support_pilot_test
+      POSTGRES_USER: support_pilot
+      POSTGRES_PASSWORD: support_pilot
+    ports:
+      - "54330:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U support_pilot -d support_pilot_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    tmpfs:
+      - /var/lib/postgresql/data
+
+volumes:
+  support_pilot_postgres_data:

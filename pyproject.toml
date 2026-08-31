@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "support-pilot"
+version = "0.1.0"
+description = "Deterministic business baseline for the SupportPilot technical support agent"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "alembic>=1.14,<2",
+    "fastapi>=0.115,<1",
+    "httpx>=0.28,<1",
+    "langgraph>=1.0,<2",
+    "psycopg[binary]>=3.2,<4",
+    "pydantic-settings>=2.7,<3",
+    "pgvector>=0.4,<1",
+    "sqlalchemy>=2.0,<3",
+    "uvicorn[standard]>=0.34,<1",
+    "pyjwt>=2.10,<3",
+    "pwdlib[argon2]>=0.2,<1",
+    "email-validator>=2.2,<3",
+    "opentelemetry-sdk>=1.39,<2",
+    "opentelemetry-exporter-otlp-proto-http>=1.39,<2",
+    "opentelemetry-instrumentation-fastapi>=0.60b0,<1",
+    "opentelemetry-instrumentation-sqlalchemy>=0.60b0,<1",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.14,<2",
+    "pytest>=8.3,<9",
+    "pytest-cov>=6,<7",
+    "ruff>=0.9,<1",
+]
+rag-local = [
+    "numpy>=1.26,<2.5",
+    "sentence-transformers>=5,<6",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/support_pilot"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = ["pydantic.mypy"]
+packages = ["support_pilot"]

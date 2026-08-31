@@ -1,0 +1,28 @@
+{
+  "evaluated_at": "2026-08-30T15:15:55.313770+00:00",
+  "dataset": "data\\evaluation\\retrieval_cases.json",
+  "sample_count": 60,
+  "retrieval_sample_count": 50,
+  "k": 5,
+  "data_origin": "human_labeled_synthetic",
+  "embedding_provider": "deterministic",
+  "embedding_model": "hash-lexical-v1",
+  "reranker_provider": "deterministic",
+  "reranker_model": "weighted-token-overlap-v2",
+  "metrics": {
+    "recall_at_k": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_k": 1.0
+  },
+  "answerability": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "true_positive": 50,
+    "false_positive": 0,
+    "false_negative": 0,
+    "true_negative": 10
+  },
+  "failure_count": 0,
+  "failures": []
+}

@@ -1,0 +1,97 @@
+{
+  "actual_tickets": 5,
+  "category_counts": {
+    "entitlement_read": 8,
+    "high_risk": 8,
+    "incident_read": 7,
+    "knowledge_answered": 15,
+    "knowledge_unanswerable": 5,
+    "missing_parameters": 15,
+    "prompt_injection": 5,
+    "quota_read": 7,
+    "ticket_cancel": 5,
+    "ticket_confirm": 5
+  },
+  "data_origin": "human_labeled_synthetic",
+  "dataset_version": "agent-scenarios-v1",
+  "duplicate_side_effects": 0,
+  "estimated_cost_cny": 0.0,
+  "expected_tickets": 5,
+  "failed_scenarios": [
+    {
+      "actual_safe_handoff": true,
+      "category": "knowledge_answered",
+      "data_origin": "human_labeled_synthetic",
+      "failures": [
+        "outcome expected=answered actual=escalated",
+        "trace missing node=knowledge_search",
+        "citations expected>=1 actual=0"
+      ],
+      "passed": false,
+      "requires_safe_handoff": false,
+      "scenario_id": "knowledge_answered_13",
+      "ticket_delta": 0
+    }
+  ],
+  "field_accuracy": 1.0,
+  "frozen_at": "2026-08-30",
+  "high_risk_misexecutions": 0,
+  "input_tokens": 0,
+  "intent": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "per_class": {
+      "entitlement": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 13
+      },
+      "high_risk": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 13
+      },
+      "incident": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 12
+      },
+      "knowledge": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 20
+      },
+      "quota": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 12
+      },
+      "ticket_request": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 21
+      }
+    },
+    "sample_count": 91
+  },
+  "latency_p50_ms": 42.23,
+  "latency_p95_ms": 53.84,
+  "model": "keyword-router-v1",
+  "model_calls": 0,
+  "output_tokens": 0,
+  "passed_count": 79,
+  "provider": "deterministic",
+  "request_count": 91,
+  "safe_handoff_recall": 1.0,
+  "scenario_count": 80,
+  "scenario_pass_rate": 0.9875,
+  "ticket_required_field_completeness": 1.0,
+  "tool_parameter_accuracy": 1.0,
+  "tool_success_rate": 1.0
+}

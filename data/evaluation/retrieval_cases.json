@@ -1,0 +1,72 @@
+[
+  {"id":"auth-01","query":"ExampleAPI v2 应该怎样设置 Authorization Bearer 请求头？","relevant_sources":["kb://exampleapi/guides/authentication"],"product_version":"v2"},
+  {"id":"auth-02","query":"API 返回 401 Unauthorized 通常检查哪些凭据问题？","relevant_sources":["kb://exampleapi/guides/authentication"],"product_version":"v2"},
+  {"id":"auth-03","query":"403 Forbidden 是密钥错误还是 entitlement 权限不足？","relevant_sources":["kb://exampleapi/guides/authentication"],"product_version":"v2"},
+  {"id":"auth-04","query":"排查鉴权失败时能不能把完整 API Key 发给客服？","relevant_sources":["kb://exampleapi/guides/authentication"],"product_version":"v2"},
+  {"id":"auth-05","query":"测试环境和生产环境密钥混用会出现什么认证错误？","relevant_sources":["kb://exampleapi/guides/authentication"],"product_version":"v2"},
+
+  {"id":"signature-01","query":"Webhook 的 X-ExampleAPI-Signature 使用什么算法？","relevant_sources":["kb://exampleapi/guides/webhook-signatures"],"product_version":"v2"},
+  {"id":"signature-02","query":"验证 webhook 签名为什么必须使用原始 request body？","relevant_sources":["kb://exampleapi/guides/webhook-signatures"],"product_version":"v2"},
+  {"id":"signature-03","query":"JSON 重新序列化后 HMAC-SHA256 验证失败怎么办？","relevant_sources":["kb://exampleapi/guides/webhook-signatures"],"product_version":"v2"},
+  {"id":"signature-04","query":"Webhook 签名应该用普通字符串比较还是常量时间比较？","relevant_sources":["kb://exampleapi/guides/webhook-signatures"],"product_version":"v2"},
+  {"id":"signature-05","query":"X-ExampleAPI-Timestamp 的事件重放窗口是多少？","relevant_sources":["kb://exampleapi/guides/webhook-signatures"],"product_version":"v2"},
+
+  {"id":"rate-01","query":"HTTP 429 响应里的 Retry-After 应该如何处理？","relevant_sources":["kb://exampleapi/reference/rate-limits"],"product_version":"v2"},
+  {"id":"rate-02","query":"X-RateLimit-Remaining 和 X-RateLimit-Reset 表示什么？","relevant_sources":["kb://exampleapi/reference/rate-limits"],"product_version":"v2"},
+  {"id":"rate-03","query":"限流重试怎样使用带随机抖动的指数退避？","relevant_sources":["kb://exampleapi/reference/rate-limits"],"product_version":"v2"},
+  {"id":"rate-04","query":"非幂等写请求遇到 429 能否直接自动重试？","relevant_sources":["kb://exampleapi/reference/rate-limits"],"product_version":"v2"},
+  {"id":"rate-05","query":"月度 quota 和瞬时 rate limit 有什么区别？","relevant_sources":["kb://exampleapi/reference/rate-limits"],"product_version":"v2"},
+
+  {"id":"export-01","query":"bulk_export 批量导出功能支持哪些套餐？","relevant_sources":["kb://exampleapi/features/bulk-export"],"product_version":"v2","plan_code":"pro"},
+  {"id":"export-02","query":"Enterprise 套餐是否具备批量导出 entitlement？","relevant_sources":["kb://exampleapi/features/bulk-export"],"product_version":"v2","plan_code":"enterprise"},
+  {"id":"export-03","query":"POST /v2/exports 创建异步导出任务需要什么幂等头？","relevant_sources":["kb://exampleapi/features/bulk-export"],"product_version":"v2","plan_code":"enterprise"},
+  {"id":"export-04","query":"批量导出完成后怎样下载签名 URL？","relevant_sources":["kb://exampleapi/features/bulk-export"],"product_version":"v2","plan_code":"pro"},
+  {"id":"export-05","query":"导出 API 返回 403 要检查 exports:write 还是套餐权限？","relevant_sources":["kb://exampleapi/features/bulk-export"],"product_version":"v2","plan_code":"enterprise"},
+
+  {"id":"incident-01","query":"如何按服务组件、区域和时间判断事故关联？","relevant_sources":["kb://exampleapi/guides/incident-status"]},
+  {"id":"incident-02","query":"状态页没有匹配 incident 是否代表服务一定正常？","relevant_sources":["kb://exampleapi/guides/incident-status"]},
+  {"id":"incident-03","query":"没有事故记录时还需要收集哪些 request_id 和时间信息？","relevant_sources":["kb://exampleapi/guides/incident-status"]},
+  {"id":"incident-04","query":"客户回复中可以展示 incident internal_notes 吗？","relevant_sources":["kb://exampleapi/guides/incident-status"]},
+  {"id":"incident-05","query":"事故公开信息应包含 public incident code 和 customer_message 吗？","relevant_sources":["kb://exampleapi/guides/incident-status"]},
+
+  {"id":"version-01","query":"ExampleAPI 使用 /v2/resources 这样的路径版本吗？","relevant_sources":["kb://exampleapi/reference/versioning"],"product_version":"v2"},
+  {"id":"version-02","query":"排障时为什么同时记录 SDK major 版本和 API 请求路径？","relevant_sources":["kb://exampleapi/reference/versioning"],"product_version":"v2"},
+  {"id":"version-03","query":"破坏性变更会提前多少天发布 deprecation notice？","relevant_sources":["kb://exampleapi/reference/versioning"],"product_version":"v2"},
+  {"id":"version-04","query":"superseded 旧文档还能参与默认检索吗？","relevant_sources":["kb://exampleapi/reference/versioning"],"product_version":"v2"},
+  {"id":"version-05","query":"客户使用 v2 时能否引用 v1 专属参数？","relevant_sources":["kb://exampleapi/reference/versioning"],"product_version":"v2"},
+
+  {"id":"idem-01","query":"Idempotency-Key 在租户和操作 scope 内怎样保证唯一？","relevant_sources":["kb://exampleapi/reference/idempotency"],"product_version":"v2"},
+  {"id":"idem-02","query":"相同幂等键和相同载荷会返回哪一个资源？","relevant_sources":["kb://exampleapi/reference/idempotency"],"product_version":"v2"},
+  {"id":"idem-03","query":"相同 Idempotency-Key 但 payload hash 不同为什么返回 409？","relevant_sources":["kb://exampleapi/reference/idempotency"],"product_version":"v2"},
+  {"id":"idem-04","query":"ExampleAPI v2 的幂等结果保存期限是多久？","relevant_sources":["kb://exampleapi/reference/idempotency"],"product_version":"v2"},
+  {"id":"idem-05","query":"并发写请求为何需要数据库唯一约束而不是进程锁？","relevant_sources":["kb://exampleapi/reference/idempotency"],"product_version":"v2"},
+
+  {"id":"delivery-01","query":"Webhook 接收端需要在多少秒内返回 2xx？","relevant_sources":["kb://exampleapi/guides/webhook-delivery"],"product_version":"v2"},
+  {"id":"delivery-02","query":"Webhook 重定向或 5xx 会被视为成功投递吗？","relevant_sources":["kb://exampleapi/guides/webhook-delivery"],"product_version":"v2"},
+  {"id":"delivery-03","query":"失败 webhook 在二十四小时内如何指数退避重试？","relevant_sources":["kb://exampleapi/guides/webhook-delivery"],"product_version":"v2"},
+  {"id":"delivery-04","query":"event_id 和 delivery_id 哪一个用于消费者去重？","relevant_sources":["kb://exampleapi/guides/webhook-delivery"],"product_version":"v2"},
+  {"id":"delivery-05","query":"Webhook 投递失败时应该检查 TLS、endpoint 和超时吗？","relevant_sources":["kb://exampleapi/guides/webhook-delivery"],"product_version":"v2"},
+
+  {"id":"region-01","query":"新加坡 ap-southeast-1 使用哪个 ExampleAPI 区域端点？","relevant_sources":["kb://exampleapi/reference/regions"],"product_version":"v2"},
+  {"id":"region-02","query":"eu-central-1 法兰克福 endpoint 是什么？","relevant_sources":["kb://exampleapi/reference/regions"],"product_version":"v2"},
+  {"id":"region-03","query":"租户创建后如何确定主要数据驻留区域？","relevant_sources":["kb://exampleapi/reference/regions"],"product_version":"v2"},
+  {"id":"region-04","query":"SupportPilot 可以自动执行客户数据区域变更吗？","relevant_sources":["kb://exampleapi/reference/regions"],"product_version":"v2"},
+  {"id":"region-05","query":"区域故障排查应该使用 endpoint 还是用户所在地推断？","relevant_sources":["kb://exampleapi/reference/regions"],"product_version":"v2"},
+
+  {"id":"page-01","query":"列表 API 的 limit 默认值和最大值是多少？","relevant_sources":["kb://exampleapi/reference/pagination"],"product_version":"v2"},
+  {"id":"page-02","query":"cursor 是不是可以由客户端解析和修改？","relevant_sources":["kb://exampleapi/reference/pagination"],"product_version":"v2"},
+  {"id":"page-03","query":"next_cursor 为空时还有下一页吗？","relevant_sources":["kb://exampleapi/reference/pagination"],"product_version":"v2"},
+  {"id":"page-04","query":"使用下一页 cursor 时为什么要保持相同过滤和排序参数？","relevant_sources":["kb://exampleapi/reference/pagination"],"product_version":"v2"},
+  {"id":"page-05","query":"分页过程中数据变化时应该按什么资源字段去重？","relevant_sources":["kb://exampleapi/reference/pagination"],"product_version":"v2"},
+
+  {"id":"negative-01","query":"请直接替我批准并执行客户退款。","relevant_sources":[],"answerable":false},
+  {"id":"negative-02","query":"把另一个租户的普通成员提升为管理员。","relevant_sources":[],"answerable":false},
+  {"id":"negative-03","query":"执行命令删除生产数据库中的所有表。","relevant_sources":[],"answerable":false},
+  {"id":"negative-04","query":"明天上海的天气和降雨概率是多少？","relevant_sources":[],"answerable":false},
+  {"id":"negative-05","query":"ExampleAPI 发票支持哪些国家的增值税抵扣？","relevant_sources":[],"answerable":false},
+  {"id":"negative-06","query":"SAML 单点登录的 Entity ID 应该配置成什么？","relevant_sources":[],"answerable":false},
+  {"id":"negative-07","query":"Ruby SDK 出现 segmentation fault 的已知修复版本是什么？","relevant_sources":[],"answerable":false},
+  {"id":"negative-08","query":"如何申请删除终端用户的全部个人数据？","relevant_sources":[],"answerable":false},
+  {"id":"negative-09","query":"服务 SLA 违约后能自动赔偿多少金额？","relevant_sources":[],"answerable":false},
+  {"id":"negative-10","query":"ExampleAPI v1 的 SOAP WSDL 下载地址是什么？","relevant_sources":[],"answerable":false,"product_version":"v1"}
+]
