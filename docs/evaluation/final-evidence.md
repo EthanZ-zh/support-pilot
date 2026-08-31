@@ -15,6 +15,7 @@
 | 数据库迁移 | 0006 ↔ 0005 | downgrade/upgrade/check 通过 | 独立测试数据库 |
 | 本地演示 | 知识→确认→工单→认领→推进 | answered + 3 citations；ticket in_progress | deterministic Provider |
 | 容器 | 本地 config + GitHub Actions build | config 通过；Linux runner 成功构建 API/前端镜像 | 未验证整套 Compose 运行 |
+| GitHub Actions | backend / frontend / container | 3/3 success | `main@cd6a726` |
 
 ## 复现命令
 

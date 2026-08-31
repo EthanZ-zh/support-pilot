@@ -16,6 +16,7 @@
 4. SSE 网络 chunk 不等于事件边界，前端增加残片 buffer 和跨 chunk 测试。
 5. Dockerfile/Compose 配置通过解析，本地两次 build 在 Docker Hub 鉴权地址超时；转到真实 GitHub runner 后镜像构建成功，同时仍未把它扩大表述成完整容器部署。
 6. 首次 GitHub Actions 运行让 Alembic 错连默认 `54329`，而 CI 数据库映射在 `54330`；补齐 `SUPPORT_PILOT_DATABASE_URL` 并增加工作流配置回归测试后修复。
+7. 旧 JWT 篡改测试只替换 Base64URL 签名末字符；由于末字符可能包含未使用位，Linux 上偶然解码成原签名字节。改为替换签名首字符后，保证测试真正破坏签名并消除平台差异。
 
 ## 当前技术债
 

@@ -22,11 +22,12 @@
 - Compose：`docker compose config --quiet` 成功，解析出 `postgres-test/postgres/api/frontend`；
 - 真实本地演示：知识 `answered`、3 条引用、工单推进到 `in_progress`；
 - 容器：本地两次 build 因 Docker Hub token 地址 TCP 超时失败；真实 GitHub Actions Linux runner 随后成功构建 API 和前端镜像。
+- CI：`main@cd6a726` 的 backend、frontend、container 三个作业全部成功。
 
 ## 剩余风险
 
 - API/前端镜像未在本机完成 build，CI 也未启动整套 Compose 服务；仍需执行并记录 `docker compose up -d` 的运行态验证；
-- GitHub Actions 已在真实仓库 runner 执行；首次运行暴露 Alembic 数据库端口配置错误，修复后由配置回归测试锁定；
+- GitHub Actions 已在真实仓库 runner 执行；运行过程暴露 Alembic 数据库端口配置错误与 JWT 篡改测试的 Base64URL 跨平台不稳定性，均已修复并由最终绿色运行验证；
 - OTel 装配路径经过 mock 测试，尚未连接真实 Collector 查看 Span；
 - 当前只有 Trace，没有服务级 Prometheus 指标、日志关联和告警规则；
 - Starlette TestClient 对 httpx 的弃用告警来自依赖组合，不影响当前测试，升级前应做兼容性验证。
