@@ -14,7 +14,8 @@
 2. 中文单字稀释 HTTP 状态码等技术标识，确定性 Reranker 改为加权词项后修复 429 场景，并用原检索集回归。
 3. TypeScript 7 与 typescript-eslint peer range 不兼容，依据实际安装错误降到 6.0 系列，而不是使用 `--force` 绕过。
 4. SSE 网络 chunk 不等于事件边界，前端增加残片 buffer 和跨 chunk 测试。
-5. Dockerfile/Compose 配置通过解析，但两次真实 build 都在 Docker Hub 鉴权地址超时，未把环境失败伪装成容器交付成功。
+5. Dockerfile/Compose 配置通过解析，本地两次 build 在 Docker Hub 鉴权地址超时；转到真实 GitHub runner 后镜像构建成功，同时仍未把它扩大表述成完整容器部署。
+6. 首次 GitHub Actions 运行让 Alembic 错连默认 `54329`，而 CI 数据库映射在 `54330`；补齐 `SUPPORT_PILOT_DATABASE_URL` 并增加工作流配置回归测试后修复。
 
 ## 当前技术债
 
@@ -23,11 +24,11 @@
 - Agent 节点级 checkpoint 尚未持久化，只有会话与运行最终状态；
 - JWT 无 refresh/MFA/revocation，浏览器使用 localStorage；
 - 工单队列无游标分页、搜索和实时推送，前端无 Playwright E2E；
-- OTel 未连接 Collector，容器镜像未因网络问题完成本地 build。
+- OTel 未连接 Collector；容器镜像已在 CI 构建，但整套 Compose 尚未做运行态验证。
 
 ## 下一轮优先级
 
-P0：网络恢复后完成容器 build/up、浏览器真实 E2E 和演示录像。  
-P1：拆分 RAG calibration/test，增加多 chunk 证据覆盖与逐主张引用评测。  
-P2：OIDC/BFF、SSE Abort/恢复、队列分页和 OTel Collector/指标/日志关联。  
+P0：完成整套 Compose 运行态验证、浏览器真实 E2E 和演示录像。
+P1：拆分 RAG calibration/test，增加多 chunk 证据覆盖与逐主张引用评测。
+P2：OIDC/BFF、SSE Abort/恢复、队列分页和 OTel Collector/指标/日志关联。
 P3：只有在压测证明需要时，再拆检索或 Agent 服务。

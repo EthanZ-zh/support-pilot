@@ -25,6 +25,7 @@ jobs:
           --health-timeout 3s
           --health-retries 20
     env:
+      SUPPORT_PILOT_DATABASE_URL: postgresql+psycopg://support_pilot:support_pilot@localhost:54330/support_pilot_test
       SUPPORT_PILOT_TEST_DATABASE_URL: postgresql+psycopg://support_pilot:support_pilot@localhost:54330/support_pilot_test
       SUPPORT_PILOT_JWT_SECRET: ci-only-jwt-secret-with-at-least-32-characters
     steps:

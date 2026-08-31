@@ -27,4 +27,4 @@
 - Fetch SSE 需要自行处理网络 chunk 边界和 error event，已由前端单元测试覆盖。
 - localStorage Token 有 XSS 风险，只作为本地演示方案；生产应采用 HttpOnly Cookie/BFF。
 - OTLP 需要外部 Collector 才能落地查看 Trace；启用与装配路径有自动化测试，但本阶段没有部署 Collector。
-- Compose 配置解析通过；本机实际镜像构建被 Docker Hub 网络超时阻断，不能声称容器运行已验证。
+- Compose 配置解析通过；本机镜像构建被 Docker Hub 网络超时阻断，真实 GitHub Actions Linux runner 已成功构建 API/前端镜像。CI 未启动整套 Compose 服务，不能声称容器运行已验证。

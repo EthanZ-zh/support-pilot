@@ -1,5 +1,7 @@
 # SupportPilot
 
+[![CI](https://github.com/EthanZ-zh/support-pilot/actions/workflows/ci.yml/badge.svg)](https://github.com/EthanZ-zh/support-pilot/actions/workflows/ci.yml)
+
 SupportPilot 是面向虚构 B2B API 平台 `ExampleAPI` 的技术支持与智能工单 Agent。本仓库已完成从确定性业务基线、混合 RAG、受控 Agent、安全闭环到 React 控制台的纵向业务链路。
 
 > 所有租户、用户、事故和工单样例均为合成数据，不代表真实企业或生产效果。
@@ -111,7 +113,7 @@ docker compose build api frontend
 docker compose up -d
 ```
 
-本机 2026-08-31 的两次镜像构建在拉取基础镜像时被 Docker Hub TCP 超时阻断；Compose 配置已验证，但在网络恢复并实际 build/up 前不得把容器运行写成已验证能力。
+本机 2026-08-31 的两次镜像构建在拉取基础镜像时被 Docker Hub TCP 超时阻断；随后 GitHub Actions 的 Linux runner 已成功执行 `docker compose build api frontend`。这证明 Dockerfile 和镜像构建链路可用，但 CI 尚未启动整套 Compose 服务，因此仍不把“完整容器运行”写成已验证能力。
 
 启用 Qwen 时，在被 Git 忽略的 `.env` 中把 `SUPPORT_PILOT_AGENT_PROVIDER` 改为 `qwen`。API Key 推荐保存为 Windows 用户级 `DASHSCOPE_API_KEY`；也支持只写在 `.env` 的 `SUPPORT_PILOT_QWEN_API_KEY`。绝不能把真实 Key 写入 `.env.example`，该文件只是可提交的空模板。共享北京 Base URL 可用于开发；正式部署应改为与 Key 同一业务空间的专属域名。未配置 Key 时 Agent API 会返回 503，不会静默回退或泄露密钥。
 
