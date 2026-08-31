@@ -71,10 +71,13 @@ def test_tampered_bearer_token_is_rejected(client: TestClient) -> None:
         },
     )
     token = login.json()["access_token"]
+    signing_input, signature = token.rsplit(".", maxsplit=1)
+    replacement = "A" if signature[0] != "A" else "B"
+    tampered_token = f"{signing_input}.{replacement}{signature[1:]}"
 
     response = client.get(
         "/api/v1/auth/me",
-        headers={"Authorization": f"Bearer {token[:-1]}x"},
+        headers={"Authorization": f"Bearer {tampered_token}"},
     )
 
     assert response.status_code == 401
