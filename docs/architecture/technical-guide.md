@@ -1,10 +1,10 @@
-# SupportPilot 面试讲解与追问
+# SupportPilot 技术讲解与设计问答
 
-## 30 秒项目介绍
+## 项目概述
 
-“SupportPilot 是我为虚构 B2B SaaS 做的技术支持 Agent。它不只聊天：先识别意图和风险，再检索带引用的知识或调用确定性只读工具；低置信度会升级，创建工单必须用户确认，支持人员再通过状态机处理并回传反馈。系统用 LangGraph 编排、PostgreSQL/pgvector 做混合检索，后端 FastAPI，前端 React/SSE，并用 JWT/RBAC、幂等、乐观锁和审计控制副作用。”
+"SupportPilot 是为虚构 B2B SaaS 做的技术支持 Agent。它不只聊天：先识别意图和风险，再检索带引用的知识或调用确定性只读工具；低置信度会升级，创建工单必须用户确认，支持人员再通过状态机处理并回传反馈。系统用 LangGraph 编排、PostgreSQL/pgvector 做混合检索，后端 FastAPI，前端 React/SSE，并用 JWT/RBAC、幂等、乐观锁和审计控制副作用。"
 
-## 3 分钟技术讲解
+## 核心链路讲解
 
 从 `/agent/resolve/stream` 开始：JWT 解析后会回查数据库用户，确认角色与租户没有漂移；AgentService 锁定会话并合并上轮缺失上下文。LangGraph 先做 Prompt Injection/高风险预检，再通过可替换 DecisionProvider 分类。R1 请求走 RAG 或确定性业务工具；R3 在模型和工具前拒绝。
 
@@ -12,7 +12,7 @@ RAG 在 SQL 层做 published/version/plan 过滤，再走 PostgreSQL 关键词�
 
 写操作先生成 TicketDraft。用户确认时要求 Idempotency-Key，数据库唯一约束防重复；人工认领和状态迁移还带 expected_version，防止两个不同操作覆盖。RBAC 和租户过滤在服务端强制，前端隐藏按钮不作为安全边界。最后 HumanFeedback 绑定原 Ticket 和 AgentRun，支持离线复盘但不自动改知识库。
 
-## 深入追问
+## 设计问答
 
 ### 为什么采用模块化单体？
 
@@ -32,7 +32,7 @@ LLM 只输出严格 Schema 的意图与参数候选，所有外部输入由 Pyda
 
 ### 幂等与数据库事务如何配合？
 
-请求先在作用域内写 processing idempotency record，Key + scope 唯一；同 Key 同 payload 成功后重放结果，不同 payload 冲突。Ticket 行锁、version 和状态变更与幂等完成记录在同一事务，避免“副作用成功但幂等仍失败”。
+请求先在作用域内写 processing idempotency record，Key + scope 唯一；同 Key 同 payload 成功后重放结果，不同 payload 冲突。Ticket 行锁、version 和状态变更与幂等完成记录在同一事务，避免"副作用成功但幂等仍失败"。
 
 ### 怎么评价模型而不是只看最终回答？
 
