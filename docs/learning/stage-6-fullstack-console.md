@@ -1,10 +1,10 @@
 # 第六阶段学习说明：SSE 与人工支持控制台
 
-## 30 秒讲法
+## 阶段概览
 
 “SupportPilot 的前端不是聊天壳。客户发起请求后，后端直接遍历 LangGraph 的 `stream(values)`，把新增 TraceEvent 作为 SSE 发送；事务提交成功后才发送唯一结果。低置信度或用户要求升级时先展示工单草稿，确认才做幂等写入。支持人员用同一个 JWT/RBAC 后端完成认领、状态迁移和反馈回流。”
 
-## 3 分钟请求链路
+## 关键请求链路
 
 1. React 登录后调用 `/auth/me` 获取角色，按 `support_agent` 或租户用户切换工作台，不由前端角色判断代替后端授权。
 2. 客户工作台用 Fetch POST `/agent/resolve/stream`，因为请求包含完整 JSON，而浏览器原生 EventSource 只能 GET。

@@ -28,15 +28,15 @@ Agent 层位于 API 与既有 RAG/业务服务之间。`DecisionProvider` 只负
 
 ## 你要能讲清的内容
 
-### 30 秒
+### 阶段概览
 
 “我用 LangGraph 把技术支持请求做成显式 DAG，Qwen3.7 Plus 通过 Provider 和严格 JSON Schema 只输出首轮意图。缺参和工单草稿进入领域会话表，下一轮按 session_id 恢复且不重复调用模型。工单确认同时使用客户端 Key 哈希和稳定会话幂等键，并发确认也只创建一张工单。”
 
-### 3 分钟
+### 关键链路
 
 沿 `API → load conversation → preflight_safety → classify/resume → risk_gate → tool/draft/confirm → AgentConversation + AgentRun + AuditEvent` 讲完整请求链路，再说明为什么恢复轮次不调用模型、为什么客户端 Key 之外还需要稳定内部 Key。
 
-### 深入追问
+### 常见追问
 
 - 如果模型把退款误判为知识查询，为什么仍不会执行退款？
 - Provider 结构化输出通过 Schema 后，为什么仍要做业务参数校验？
