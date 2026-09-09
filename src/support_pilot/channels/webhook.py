@@ -38,14 +38,7 @@ class WebhookChannel:
             address = ipaddress.ip_address(hostname)
         except ValueError:
             address = None
-        if address is not None and (
-            address.is_loopback
-            or address.is_private
-            or address.is_link_local
-            or address.is_reserved
-            or address.is_multicast
-            or address.is_unspecified
-        ):
+        if address is not None and (not address.is_global or address.is_multicast):
             raise ValueError("Webhook URL targets a disallowed IP address")
         self._settings = settings
         self._url = url

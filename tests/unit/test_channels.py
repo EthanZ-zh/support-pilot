@@ -15,7 +15,6 @@ from support_pilot.channels.smtp import SmtpChannel
 from support_pilot.channels.webhook import WebhookChannel
 from support_pilot.config import Settings
 from support_pilot.domain.enums import IdempotencyStatus
-from support_pilot.domain.rules import canonical_request_hash
 
 
 def _event(*, assignee_email: str | None = None) -> TicketEvent:
@@ -238,6 +237,7 @@ def test_webhook_deliver_wraps_http_error(monkeypatch: pytest.MonkeyPatch) -> No
         ("https://10.0.0.8/x", ["10.0.0.8"]),
         ("https://169.254.169.254/x", ["169.254.169.254"]),
         ("https://224.0.0.1/x", ["224.0.0.1"]),
+        ("https://100.64.0.1/x", ["100.64.0.1"]),
         ("https://other.example/x", ["hook.example"]),
     ],
 )
@@ -251,6 +251,15 @@ def test_webhook_rejects_unsafe_or_unapproved_urls(
     )
     with pytest.raises(ValueError, match="Webhook"):
         WebhookChannel(settings)
+
+
+def test_webhook_allows_an_explicit_global_literal_ip() -> None:
+    settings = Settings(
+        notification_channel="webhook",
+        webhook_url="https://93.184.216.34/x",
+        webhook_allowed_hosts=["93.184.216.34"],
+    )
+    WebhookChannel(settings)
 
 
 def test_webhook_url_is_not_exposed() -> None:
@@ -281,11 +290,15 @@ class _FakeSession:
         self.commits = 0
         self.added: list[object] = []
         self.existing: object | None = None
+        self.tickets: dict[object, object] = {}
+        self.request_hash: str | None = None
 
     def add(self, value: object) -> None:
         self.added.append(value)
         if hasattr(value, "id") and value.id is None:  # type: ignore[attr-defined]
             value.id = uuid4()  # type: ignore[attr-defined]
+        if hasattr(value, "public_code"):
+            self.tickets[value.id] = value  # type: ignore[attr-defined]
 
     def flush(self) -> None:
         return None
@@ -293,12 +306,20 @@ class _FakeSession:
     def scalar(self, _statement: object) -> object | None:
         self.scalar_calls += 1
         if self.scalar_calls == 1:
+            self.request_hash = _statement.compile().params["request_hash"]  # type: ignore[attr-defined]
             return "inserted"
         if self.scalar_calls == 2:
             return None
         return self.existing
 
     def execute(self, _statement: object) -> None:
+        ticket = next((item for item in self.added if hasattr(item, "public_code")), None)
+        if ticket is not None and self.existing is None:
+            self.existing = SimpleNamespace(
+                request_hash=self.request_hash,
+                status=IdempotencyStatus.SUCCEEDED.value,
+                resource_id=ticket.id,  # type: ignore[attr-defined]
+            )
         return None
 
     def commit(self) -> None:
@@ -308,11 +329,15 @@ class _FakeSession:
 class _FailingChannel:
     name = "failing"
 
-    def __init__(self) -> None:
+    def __init__(self, session: _FakeSession) -> None:
+        self.session = session
         self.deliveries = 0
+        self.commits_at_delivery: list[int] = []
 
     def deliver(self, event: TicketEvent) -> None:
         self.deliveries += 1
+        self.commits_at_delivery.append(self.session.commits)
+        assert self.session.commits >= 1
         raise ChannelDeliveryError("external failure")
 
 
@@ -320,7 +345,7 @@ def test_service_commits_before_delivery_failure_and_skips_replay(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     session = _FakeSession()
-    channel = _FailingChannel()
+    channel = _FailingChannel(session)
     service = SupportService(session, channel=channel)  # type: ignore[arg-type]
     tenant_id = uuid4()
     actor = SimpleNamespace(id=uuid4(), tenant_id=tenant_id)
@@ -341,19 +366,12 @@ def test_service_commits_before_delivery_failure_and_skips_replay(
         first = service.process(request, actor=actor, idempotency_key="ticket-001")
 
     ticket = next(item for item in session.added if hasattr(item, "public_code"))
-    request_hash = canonical_request_hash(
-        request.model_dump(mode="json", exclude={"session_id"})
-    )
-    session.existing = SimpleNamespace(
-        request_hash=request_hash,
-        status=IdempotencyStatus.SUCCEEDED.value,
-        resource_id=ticket.id,
-    )
-    service.repository.get_ticket = lambda _ticket_id: ticket  # type: ignore[method-assign]
+    service.repository.get_ticket = lambda ticket_id: session.tickets[ticket_id]  # type: ignore[method-assign]
     replayed = service.process(request, actor=actor, idempotency_key="ticket-001")
 
     assert first.data["replayed"] is False
     assert replayed.data["replayed"] is True
     assert session.commits >= 2
     assert channel.deliveries == 1
+    assert channel.commits_at_delivery == [1]
     assert ticket.public_code in caplog.text
