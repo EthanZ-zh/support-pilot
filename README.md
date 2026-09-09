@@ -130,6 +130,14 @@ uv run python scripts/evaluate_retrieval.py --provider local_bge
 
 可通过 `SUPPORT_PILOT_MODEL_CACHE_DIR` 覆盖模型目录。真实模型首次下载和 CPU 重排较慢；确定性 Provider 只用于 CI 和流程回归。
 
+## 工单通知与验证边界
+
+创建工单的数据库事务提交后，系统通过可配置的 `OutboundChannel` 发送通知；通知失败只记录公开工单号，不回滚已经创建的工单，使用同一幂等键重放也不会重复投递。默认 `log` 通道无需外部服务；`smtp` 和 `webhook` 通过 `.env` 中的 `SUPPORT_PILOT_NOTIFICATION_CHANNEL` 切换。
+
+SMTP 密码与 Webhook URL 使用 `SecretStr` 保存；认证 SMTP 强制启用证书和主机名校验，Webhook 强制 HTTPS、显式主机白名单并拒绝非公网 IP 与环境代理。自动化测试只使用 Mock/Fake 外部边界，不代表真实邮件或群机器人已经完成线上投递验证。
+
+当前验证结果为 97 项后端测试通过；Alembic upgrade/check、前端测试/类型检查/lint/build、Docker Compose 配置检查及 GitHub Actions 均通过。
+
 ## 验证
 
 ```powershell
