@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ssl
 from types import SimpleNamespace
 from uuid import uuid4
 
@@ -69,6 +70,7 @@ def test_smtp_build_message_content() -> None:
 def test_smtp_deliver_uses_mocked_client(monkeypatch: pytest.MonkeyPatch) -> None:
     sent: list[object] = []
     credentials: list[tuple[str, str]] = []
+    tls_contexts: list[ssl.SSLContext | None] = []
 
     class FakeSmtp:
         def __init__(self, *args: object, **kwargs: object) -> None:
@@ -80,8 +82,8 @@ def test_smtp_deliver_uses_mocked_client(monkeypatch: pytest.MonkeyPatch) -> Non
         def __exit__(self, *args: object) -> None:
             return None
 
-        def starttls(self) -> None:
-            return None
+        def starttls(self, context: ssl.SSLContext | None = None) -> None:
+            tls_contexts.append(context)
 
         def login(self, username: str, password: str) -> None:
             credentials.append((username, password))
@@ -101,6 +103,16 @@ def test_smtp_deliver_uses_mocked_client(monkeypatch: pytest.MonkeyPatch) -> Non
     SmtpChannel(settings).deliver(_event())
     assert len(sent) == 1
     assert credentials == [("mailer", "smtp-secret")]
+    assert len(tls_contexts) == 1
+    assert tls_contexts[0] is not None
+    assert tls_contexts[0].verify_mode == ssl.CERT_REQUIRED
+    assert tls_contexts[0].check_hostname is True
+
+
+@pytest.mark.parametrize("port", [0, 65_536])
+def test_settings_rejects_invalid_smtp_ports(port: int) -> None:
+    with pytest.raises(ValueError, match="smtp_port"):
+        Settings(smtp_port=port)
 
 
 def test_smtp_requires_to_email_at_construction() -> None:
@@ -238,6 +250,7 @@ def test_webhook_deliver_wraps_http_error(monkeypatch: pytest.MonkeyPatch) -> No
         ("https://169.254.169.254/x", ["169.254.169.254"]),
         ("https://224.0.0.1/x", ["224.0.0.1"]),
         ("https://100.64.0.1/x", ["100.64.0.1"]),
+        ("https://127.0.0.1./x", ["127.0.0.1"]),
         ("https://other.example/x", ["hook.example"]),
     ],
 )

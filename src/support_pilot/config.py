@@ -63,7 +63,7 @@ class Settings(BaseSettings):
     reranker_model: str = "BAAI/bge-reranker-base"
     notification_channel: str = "log"
     smtp_host: str = ""
-    smtp_port: int = 587
+    smtp_port: int = Field(default=587, ge=1, le=65535)
     smtp_username: str = ""
     smtp_password: SecretStr = SecretStr("")
     smtp_use_tls: bool = True

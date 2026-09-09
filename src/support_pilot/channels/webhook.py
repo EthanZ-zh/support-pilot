@@ -35,7 +35,7 @@ class WebhookChannel:
         if normalized_host not in allowed_hosts:
             raise ValueError("Webhook URL host is not allowed")
         try:
-            address = ipaddress.ip_address(hostname)
+            address = ipaddress.ip_address(normalized_host)
         except ValueError:
             address = None
         if address is not None and (not address.is_global or address.is_multicast):

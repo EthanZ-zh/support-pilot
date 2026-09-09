@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import smtplib
+import ssl
 from email.message import EmailMessage
 from email.utils import formatdate
 
@@ -29,7 +30,7 @@ class SmtpChannel:
                 timeout=self._settings.channel_request_timeout_seconds,
             ) as client:
                 if self._settings.smtp_use_tls:
-                    client.starttls()
+                    client.starttls(context=ssl.create_default_context())
                 if self._settings.smtp_username:
                     client.login(
                         self._settings.smtp_username,
