@@ -1,3 +1,4 @@
+import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any, NoReturn
 from uuid import UUID, uuid4
@@ -15,6 +16,7 @@ from support_pilot.application.contracts import (
     SupportResponse,
     TicketInput,
 )
+from support_pilot.channels.base import ChannelDeliveryError, OutboundChannel, TicketEvent
 from support_pilot.domain.enums import (
     AuditOutcome,
     IdempotencyStatus,
@@ -43,11 +45,14 @@ from support_pilot.infrastructure.models import (
 )
 from support_pilot.infrastructure.repositories import SupportRepository
 
+logger = logging.getLogger(__name__)
+
 
 class SupportService:
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: Session, *, channel: OutboundChannel | None = None) -> None:
         self.session = session
         self.repository = SupportRepository(session)
+        self._channel = channel
 
     def process(
         self,
@@ -352,7 +357,24 @@ class SupportService:
             metadata={"public_code": ticket.public_code},
         )
         self.session.commit()
+        self._notify_ticket_created(ticket)
         return self._ticket_response(record, ticket, replayed=False)
+
+    def _notify_ticket_created(self, ticket: Ticket) -> None:
+        if self._channel is None:
+            return
+        event = TicketEvent(
+            event_type="ticket_created",
+            ticket_id=ticket.id,
+            public_code=ticket.public_code,
+            tenant_id=ticket.tenant_id,
+            status=ticket.status,
+            summary=redact_text(ticket.summary),
+        )
+        try:
+            self._channel.deliver(event)
+        except ChannelDeliveryError:
+            logger.warning("ticket created but channel delivery failed: %s", ticket.public_code)
 
     def _refuse_high_risk(
         self,

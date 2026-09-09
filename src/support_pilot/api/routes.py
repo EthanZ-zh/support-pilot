@@ -16,6 +16,7 @@ from support_pilot.application.contracts import SupportInput, SupportResponse
 from support_pilot.application.services import SupportService
 from support_pilot.auth.contracts import CurrentUserResponse, LoginRequest, TokenResponse
 from support_pilot.auth.service import authenticate_user, issue_access_token
+from support_pilot.channels.factory import get_outbound_channel
 from support_pilot.domain.enums import TicketStatus
 from support_pilot.domain.errors import DomainError
 from support_pilot.rag.contracts import KnowledgeSearchInput, KnowledgeSearchResponse
@@ -202,7 +203,7 @@ def resolve_support_request(
         str | None, Header(alias="Idempotency-Key", min_length=1, max_length=100)
     ] = None,
 ) -> SupportResponse:
-    return SupportService(session).process(
+    return SupportService(session, channel=get_outbound_channel()).process(
         request,
         actor=actor,
         idempotency_key=idempotency_key,

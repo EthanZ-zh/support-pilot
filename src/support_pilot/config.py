@@ -61,6 +61,16 @@ class Settings(BaseSettings):
     model_cache_dir: Path = Path("D:/model-cache/support-pilot/huggingface")
     embedding_model: str = "BAAI/bge-small-zh-v1.5"
     reranker_model: str = "BAAI/bge-reranker-base"
+    notification_channel: str = "log"
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_use_tls: bool = True
+    smtp_from_email: str = ""
+    smtp_to_email: str = ""
+    webhook_url: str = ""
+    channel_request_timeout_seconds: float = Field(default=10.0, gt=0.0, le=60.0)
 
     @field_validator("agent_provider")
     @classmethod
@@ -68,6 +78,14 @@ class Settings(BaseSettings):
         normalized = value.strip().casefold()
         if normalized not in {"deterministic", "qwen"}:
             raise ValueError("agent_provider must be 'deterministic' or 'qwen'")
+        return normalized
+
+    @field_validator("notification_channel")
+    @classmethod
+    def validate_notification_channel(cls, value: str) -> str:
+        normalized = value.strip().casefold()
+        if normalized not in {"log", "smtp", "webhook"}:
+            raise ValueError("notification_channel must be 'log', 'smtp' or 'webhook'")
         return normalized
 
     @field_validator("qwen_base_url")
