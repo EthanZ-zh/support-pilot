@@ -65,11 +65,12 @@ class Settings(BaseSettings):
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_username: str = ""
-    smtp_password: str = ""
+    smtp_password: SecretStr = SecretStr("")
     smtp_use_tls: bool = True
     smtp_from_email: str = ""
     smtp_to_email: str = ""
-    webhook_url: str = ""
+    webhook_url: SecretStr = SecretStr("")
+    webhook_allowed_hosts: list[str] = Field(default_factory=list)
     channel_request_timeout_seconds: float = Field(default=10.0, gt=0.0, le=60.0)
 
     @field_validator("agent_provider")

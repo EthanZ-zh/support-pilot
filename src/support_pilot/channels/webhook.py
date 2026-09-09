@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import ipaddress
+from urllib.parse import urlsplit
+
 import httpx
 
 from support_pilot.channels.base import ChannelDeliveryError, TicketEvent
@@ -10,16 +13,50 @@ class WebhookChannel:
     name = "webhook"
 
     def __init__(self, settings: Settings) -> None:
-        if not settings.webhook_url:
+        url = settings.webhook_url.get_secret_value()
+        if not url:
             raise ValueError("Webhook notification channel requires WEBHOOK_URL")
+        try:
+            parsed = urlsplit(url)
+            hostname = parsed.hostname
+            _ = parsed.port
+        except ValueError as error:
+            raise ValueError("Webhook URL is invalid") from error
+        if parsed.scheme.casefold() != "https":
+            raise ValueError("Webhook URL must use HTTPS")
+        if not hostname or parsed.username is not None or parsed.password is not None:
+            raise ValueError("Webhook URL must not include userinfo")
+        normalized_host = hostname.rstrip(".").casefold()
+        allowed_hosts = {
+            host.strip().rstrip(".").casefold()
+            for host in settings.webhook_allowed_hosts
+            if host.strip()
+        }
+        if normalized_host not in allowed_hosts:
+            raise ValueError("Webhook URL host is not allowed")
+        try:
+            address = ipaddress.ip_address(hostname)
+        except ValueError:
+            address = None
+        if address is not None and (
+            address.is_loopback
+            or address.is_private
+            or address.is_link_local
+            or address.is_reserved
+            or address.is_multicast
+            or address.is_unspecified
+        ):
+            raise ValueError("Webhook URL targets a disallowed IP address")
         self._settings = settings
+        self._url = url
 
     def deliver(self, event: TicketEvent) -> None:
         try:
             response = httpx.post(
-                self._settings.webhook_url,
+                self._url,
                 json=self._build_payload(event),
                 timeout=self._settings.channel_request_timeout_seconds,
+                trust_env=False,
             )
             response.raise_for_status()
         except httpx.HTTPError as error:

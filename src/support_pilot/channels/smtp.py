@@ -12,13 +12,17 @@ class SmtpChannel:
     name = "smtp"
 
     def __init__(self, settings: Settings) -> None:
-        if not settings.smtp_host or not settings.smtp_from_email:
-            raise ValueError("SMTP notification channel requires SMTP_HOST and SMTP_FROM_EMAIL")
+        if not settings.smtp_host or not settings.smtp_from_email or not settings.smtp_to_email:
+            raise ValueError(
+                "SMTP notification channel requires SMTP_HOST, SMTP_FROM_EMAIL and SMTP_TO_EMAIL"
+            )
+        if settings.smtp_username and not settings.smtp_use_tls:
+            raise ValueError("authenticated SMTP notification channel requires TLS")
         self._settings = settings
 
     def deliver(self, event: TicketEvent) -> None:
-        message = self._build_message(event)
         try:
+            message = self._build_message(event)
             with smtplib.SMTP(
                 self._settings.smtp_host,
                 self._settings.smtp_port,
@@ -27,9 +31,12 @@ class SmtpChannel:
                 if self._settings.smtp_use_tls:
                     client.starttls()
                 if self._settings.smtp_username:
-                    client.login(self._settings.smtp_username, self._settings.smtp_password)
+                    client.login(
+                        self._settings.smtp_username,
+                        self._settings.smtp_password.get_secret_value(),
+                    )
                 client.send_message(message)
-        except (OSError, smtplib.SMTPException) as error:
+        except (OSError, smtplib.SMTPException, TypeError, ValueError) as error:
             raise ChannelDeliveryError("SMTP delivery failed") from error
 
     def _build_message(self, event: TicketEvent) -> EmailMessage:
