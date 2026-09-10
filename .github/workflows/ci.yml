@@ -58,9 +58,66 @@ jobs:
       - run: npm run test
       - run: npm run build
 
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.6-pg16-trixie
+        env:
+          POSTGRES_DB: support_pilot_test
+          POSTGRES_USER: support_pilot
+          POSTGRES_PASSWORD: support_pilot
+        ports:
+          - 54330:5432
+        options: >-
+          --health-cmd "pg_isready -U support_pilot -d support_pilot_test"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      E2E_DATABASE_URL: postgresql+psycopg://support_pilot:support_pilot@localhost:54330/support_pilot_test
+      E2E_PYTHON: .venv/bin/python
+      SUPPORT_PILOT_JWT_SECRET: e2e-only-jwt-secret-with-at-least-32-characters
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.7"
+          enable-cache: true
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: uv sync --frozen --group dev
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm run test:e2e
+        working-directory: frontend
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: support-pilot-playwright-report
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7
+
   container:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - run: docker compose config --quiet
       - run: docker compose build api frontend
+      - run: docker compose up -d --wait --wait-timeout 180
+        env:
+          SUPPORT_PILOT_JWT_SECRET: compose-only-jwt-secret-with-at-least-32-characters
+      - run: |
+          curl --fail http://127.0.0.1:8000/api/v1/health/ready
+          curl --fail http://127.0.0.1:5173/
+      - if: failure()
+        run: docker compose logs --no-color
+      - if: always()
+        run: docker compose down --volumes
