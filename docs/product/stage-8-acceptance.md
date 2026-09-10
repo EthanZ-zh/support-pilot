@@ -17,8 +17,8 @@
 
 对外介绍项目前保持以下口径：
 
-1. 79/80 是 deterministic Agent 合成评测，不是 Qwen 或生产准确率；
+1. 80/80 是 deterministic Agent 合成评测，不是 Qwen 或生产准确率；历史 79/80 报告仍保留用于说明多证据问题；
 2. Qwen 只有 7 条真实 Provider 冒烟；
-3. 97 个后端测试、4 个前端单元测试与 1 条 Chromium E2E 是 2026-09-10 快照；后续修改后必须复跑再更新；
+3. 101 个后端测试、4 个前端单元测试与 1 条 Chromium E2E 是 2026-09-10 快照；后续修改后必须复跑再更新；
 4. GitHub Actions 已验证镜像构建、Compose 启动与短时探活，但不表述为生产部署或生产稳定性验证；
 5. 浏览器证据限于 deterministic Provider 下的 Chromium 主闭环，不扩展为多浏览器、真实模型或外部通知端到端验证。

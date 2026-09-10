@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import math
 import sys
@@ -6,7 +7,6 @@ from uuid import UUID
 
 import pytest
 
-from scripts.evaluate_retrieval import parse_args as parse_retrieval_args
 from support_pilot.rag.ingestion import MarkdownChunker
 from support_pilot.rag.metrics import (
     aggregate_metrics,
@@ -150,8 +150,14 @@ def test_retrieval_calibration_and_holdout_sets_are_disjoint() -> None:
 def test_retrieval_evaluation_defaults_to_holdout_set(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "evaluate_retrieval", Path("scripts/evaluate_retrieval.py")
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
     monkeypatch.setattr(sys, "argv", ["evaluate_retrieval.py"])
 
-    args = parse_retrieval_args()
+    args = module.parse_args()
 
     assert args.dataset == Path("data/evaluation/retrieval_test_cases.json")

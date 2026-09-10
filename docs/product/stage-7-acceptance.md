@@ -21,7 +21,7 @@
 - 浏览器：1 条 Chromium E2E 通过，最终工单状态断言为 `in_progress`；
 - 迁移：`alembic upgrade head` 与 `alembic check` 通过，无模型漂移；
 - Compose：`docker compose config --quiet` 成功，解析出 `postgres-test/postgres/api/frontend`；
-- 真实本地演示：知识 `answered`、3 条引用、工单推进到 `in_progress`；
+- 真实本地演示：知识 `answered`、返回实际采用的 chunk 引用、工单推进到 `in_progress`；
 - 容器：本机构建因 Docker Hub token 地址 TCP 超时失败；GitHub Actions Linux runner 成功构建镜像、启动整套 Compose，并验证 API、前端及 Nginx 反向代理健康路径。
 - CI：`main@7007b49` 的 backend、frontend、e2e、container 四个作业全部成功。
 

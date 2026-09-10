@@ -1,0 +1,38 @@
+{
+  "evaluated_at": "2026-09-10T07:42:35.083717+00:00",
+  "dataset": "data\\evaluation\\retrieval_test_cases.json",
+  "sample_count": 30,
+  "retrieval_sample_count": 20,
+  "k": 5,
+  "data_origin": "human_labeled_synthetic",
+  "embedding_provider": "local_bge",
+  "embedding_model": "BAAI/bge-small-zh-v1.5",
+  "reranker_provider": "local_bge",
+  "reranker_model": "BAAI/bge-reranker-base",
+  "metrics": {
+    "recall_at_k": 1.0,
+    "mrr": 0.975,
+    "ndcg_at_k": 0.9815464876785729
+  },
+  "answerability": {
+    "precision": 1.0,
+    "recall": 0.95,
+    "f1": 0.9743589743589743,
+    "true_positive": 19,
+    "false_positive": 0,
+    "false_negative": 1,
+    "true_negative": 10
+  },
+  "failure_count": 1,
+  "failures": [
+    {
+      "kind": "answerability",
+      "id": "holdout-auth-01",
+      "query": "接口分别返回 401 和 403 时，应如何区分认证失败与权限不足？",
+      "expected": true,
+      "predicted": false,
+      "reason": "insufficient_relevance",
+      "top_score": 0.09901043772697449
+    }
+  ]
+}
