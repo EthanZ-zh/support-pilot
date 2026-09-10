@@ -9,6 +9,11 @@ const python = process.env.E2E_PYTHON ?? (
 )
 const databaseUrl = process.env.E2E_DATABASE_URL
   ?? 'postgresql+psycopg://support_pilot:support_pilot@127.0.0.1:54330/support_pilot_test'
+const databaseName = decodeURIComponent(new URL(databaseUrl).pathname.replace(/^\/+/, ''))
+
+if (databaseName !== 'support_pilot_test') {
+  throw new Error('E2E_DATABASE_URL must target support_pilot_test')
+}
 
 export default defineConfig({
   testDir: './e2e',
@@ -45,6 +50,7 @@ export default defineConfig({
         SUPPORT_PILOT_AGENT_PROVIDER: 'deterministic',
         SUPPORT_PILOT_RETRIEVAL_PROVIDER: 'deterministic',
         SUPPORT_PILOT_NOTIFICATION_CHANNEL: 'log',
+        SUPPORT_PILOT_OTEL_ENABLED: 'false',
         SUPPORT_PILOT_JWT_SECRET: process.env.SUPPORT_PILOT_JWT_SECRET
           ?? 'e2e-only-jwt-secret-with-at-least-32-characters',
       } as Record<string, string>,

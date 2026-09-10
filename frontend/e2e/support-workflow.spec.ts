@@ -35,4 +35,5 @@ test('streams cited guidance before a confirmed ticket reaches human handling', 
   await expect(page.getByText('open → triaged')).toBeVisible()
   await page.getByRole('button', { name: '转为 in_progress' }).click()
   await expect(page.getByText('triaged → in_progress')).toBeVisible()
+  await expect(page.locator('.status-pill')).toHaveText('in_progress')
 })
