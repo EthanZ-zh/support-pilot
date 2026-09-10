@@ -44,7 +44,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--dataset",
         type=Path,
-        default=Path("data/evaluation/retrieval_cases.json"),
+        default=Path("data/evaluation/retrieval_test_cases.json"),
     )
     parser.add_argument("--output", type=Path)
     parser.add_argument("--k", type=int, default=5)

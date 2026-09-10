@@ -185,14 +185,15 @@ def build_agent_graph(
                 "当前证据不足，不能可靠作答，建议转人工处理。",
                 result.decision.reason,
             )
-        if has_prompt_injection_pattern(result.hits[0].content):
+        selected_hits = result.hits[: result.decision.evidence_count]
+        if any(has_prompt_injection_pattern(hit.content) for hit in selected_hits):
             return _escalation(
                 "security_or_privacy",
                 "检索证据包含不可信指令，已停止自动回答并转人工复核。",
                 "knowledge_prompt_injection_detected",
             )
-        citations = [hit.citation.model_dump(mode="json") for hit in result.hits[:3]]
-        answer = result.hits[0].content
+        citations = [hit.citation.model_dump(mode="json") for hit in selected_hits]
+        answer = "\n\n".join(hit.content for hit in selected_hits)
         return {
             "outcome": "answered",
             "message": answer,
