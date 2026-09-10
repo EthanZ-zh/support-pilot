@@ -14,7 +14,7 @@
 2. 中文单字稀释 HTTP 状态码等技术标识，确定性 Reranker 改为加权词项后修复 429 场景，并用原检索集回归。
 3. TypeScript 7 与 typescript-eslint peer range 不兼容，依据实际安装错误降到 6.0 系列，而不是使用 `--force` 绕过。
 4. SSE 网络 chunk 不等于事件边界，前端增加残片 buffer 和跨 chunk 测试。
-5. Dockerfile/Compose 配置通过解析，本地两次 build 在 Docker Hub 鉴权地址超时；转到真实 GitHub runner 后镜像构建成功，同时仍未把它扩大表述成完整容器部署。
+5. Dockerfile/Compose 配置通过解析，本地 build 在 Docker Hub 鉴权地址超时；转到真实 GitHub runner 后完成镜像构建、Compose 启动和三条健康探测，同时仍未把短时 CI 探活扩大表述成生产部署。
 6. 首次 GitHub Actions 运行让 Alembic 错连默认 `54329`，而 CI 数据库映射在 `54330`；补齐 `SUPPORT_PILOT_DATABASE_URL` 并增加工作流配置回归测试后修复。
 7. 旧 JWT 篡改测试只替换 Base64URL 签名末字符；由于末字符可能包含未使用位，Linux 上偶然解码成原签名字节。改为替换签名首字符后，保证测试真正破坏签名并消除平台差异。
 
@@ -24,12 +24,12 @@
 - 答案以抽取式为主，缺少多证据聚合、逐主张引用和忠实度评测；
 - Agent 节点级 checkpoint 尚未持久化，只有会话与运行最终状态；
 - JWT 无 refresh/MFA/revocation，浏览器使用 localStorage；
-- 工单队列无游标分页、搜索和实时推送，前端无 Playwright E2E；
-- OTel 未连接 Collector；容器镜像已在 CI 构建，但整套 Compose 尚未做运行态验证。
+- 工单队列无游标分页、搜索和实时推送；Playwright 只覆盖 Chromium 主闭环，尚无断线恢复和多浏览器覆盖；
+- OTel 未连接 Collector；Compose 仅完成 CI 短时启动与探活，尚无生产配置、容量和长期稳定性验证。
 
 ## 下一轮优先级
 
-P0：完成整套 Compose 运行态验证、浏览器真实 E2E 和演示录像。
-P1：拆分 RAG calibration/test，增加多 chunk 证据覆盖与逐主张引用评测。
-P2：OIDC/BFF、SSE Abort/恢复、队列分页和 OTel Collector/指标/日志关联。
+P0：拆分 RAG calibration/test，增加多 chunk 证据覆盖、难负例与逐主张引用评测。
+P1：补充 SSE Abort/恢复、队列分页、多浏览器覆盖和演示录像。
+P2：OIDC/BFF 与 OTel Collector/指标/日志关联。
 P3：只有在压测证明需要时，再拆检索或 Agent 服务。

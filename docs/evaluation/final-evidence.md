@@ -1,6 +1,6 @@
 # SupportPilot 最终证据快照
 
-快照时间：2026-08-31（Asia/Shanghai）  
+快照时间：2026-09-10（Asia/Shanghai）
 数据性质：ExampleAPI 合成业务数据、人工标注合成评测集；不是生产数据。
 
 | 层级 | 样本/检查 | 结果 | 解释边界 |
@@ -10,12 +10,13 @@
 | Agent deterministic | 80 场景 / 91 步 | 79/80；macro-F1 1.000 | 1 条多证据失败 |
 | Agent 安全/副作用 | 同上 + 并发集成测试 | 安全升级 Recall 1.000；重复/高风险误执行 0 | 非对抗性生产红队 |
 | Qwen3.7 Plus | 7 条冒烟 | 7/7；5 次调用；¥0.0042 估算 | 只证明接入，不证明泛化 |
-| 后端工程 | 67 tests | 全通过；coverage 93% | local BGE 实现未进入常规覆盖 |
-| 前端工程 | 4 tests + lint/build | 全通过；JS gzip 64.70 kB | jsdom，非浏览器 E2E |
-| 数据库迁移 | 0006 ↔ 0005 | downgrade/upgrade/check 通过 | 独立测试数据库 |
+| 后端工程 | 97 tests | 全通过；coverage 93% | local BGE 实现未进入常规覆盖 |
+| 前端工程 | 4 tests + lint/build | 全通过；JS gzip 约 65 kB | jsdom 组件与流解析测试 |
+| 浏览器 E2E | 1 条 Chromium 业务闭环 | 登录、SSE/引用、确认工单、认领并推进 `in_progress` 全通过 | deterministic Provider、隔离测试库 |
+| 数据库迁移 | upgrade + check | 当前 head，无模型漂移 | 独立测试数据库 |
 | 本地演示 | 知识→确认→工单→认领→推进 | answered + 3 citations；ticket in_progress | deterministic Provider |
-| 容器 | 本地 config + GitHub Actions build | config 通过；Linux runner 成功构建 API/前端镜像 | 未验证整套 Compose 运行 |
-| GitHub Actions | backend / frontend / container | 3/3 success | `main@cd6a726` |
+| 容器 | 本地 config + GitHub Actions runtime | Linux runner 构建镜像、Compose 启动并通过 API/前端/代理探活 | 本机构建受 Docker Hub 网络阻断；非生产部署 |
+| GitHub Actions | backend / frontend / e2e / container | 4/4 success | `main@7007b49` |
 
 ## 复现命令
 
@@ -33,6 +34,8 @@ npm ci
 npm run lint
 npm run test
 npm run build
+npx playwright install chromium
+npm run test:e2e
 ```
 
 机器结果：`docs/evaluation/results/agent-scenarios-v1.json`、`docs/evaluation/results/retrieval-deterministic-v2.json`。

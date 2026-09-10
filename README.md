@@ -113,7 +113,7 @@ docker compose build api frontend
 docker compose up -d
 ```
 
-本机 2026-08-31 的两次镜像构建在拉取基础镜像时被 Docker Hub TCP 超时阻断；随后 GitHub Actions 的 Linux runner 已成功执行 `docker compose build api frontend`。这证明 Dockerfile 和镜像构建链路可用，但 CI 尚未启动整套 Compose 服务，因此仍不把“完整容器运行”写成已验证能力。
+本机 2026-09-10 的镜像构建仍在拉取基础镜像元数据时被 Docker Hub 鉴权端点 TCP 超时阻断；GitHub Actions 的 Linux runner 已成功构建镜像、执行 `docker compose up -d --wait`，并分别验证 API、前端页面及 Nginx 到 API 的 `/api/v1/health/ready` 代理链路。该结果证明仓库当前的 Compose 运行链路可复现，不代表生产部署或长期稳定性验证。
 
 启用 Qwen 时，在被 Git 忽略的 `.env` 中把 `SUPPORT_PILOT_AGENT_PROVIDER` 改为 `qwen`。API Key 推荐保存为 Windows 用户级 `DASHSCOPE_API_KEY`；也支持只写在 `.env` 的 `SUPPORT_PILOT_QWEN_API_KEY`。绝不能把真实 Key 写入 `.env.example`，该文件只是可提交的空模板。共享北京 Base URL 可用于开发；正式部署应改为与 Key 同一业务空间的专属域名。未配置 Key 时 Agent API 会返回 503，不会静默回退或泄露密钥。
 
@@ -136,7 +136,7 @@ uv run python scripts/evaluate_retrieval.py --provider local_bge
 
 SMTP 密码与 Webhook URL 使用 `SecretStr` 保存；认证 SMTP 强制启用证书和主机名校验，Webhook 强制 HTTPS、显式主机白名单并拒绝非公网 IP 与环境代理。自动化测试只使用 Mock/Fake 外部边界，不代表真实邮件或群机器人已经完成线上投递验证。
 
-当前验证结果为 97 项后端测试通过；Alembic upgrade/check、前端测试/类型检查/lint/build、Docker Compose 配置检查及 GitHub Actions 均通过。
+当前验证结果为 97 项后端测试、4 项前端单元测试和 1 条 Chromium 业务 E2E 通过；Alembic upgrade/check、前端类型检查/lint/build、Docker Compose 启动与探活及 GitHub Actions 均通过。浏览器 E2E 使用确定性 Provider、隔离的 `support_pilot_test` 数据库和 `log` 通知通道，不会调用付费模型或外部通知服务。
 
 ## 验证
 
@@ -150,13 +150,16 @@ Set-Location frontend
 npm run lint
 npm run test
 npm run build
+$env:PLAYWRIGHT_BROWSERS_PATH = 'D:\model-cache\support-pilot\playwright'
+npx playwright install chromium
+npm run test:e2e
 ```
 
 集成测试默认连接：
 
 `postgresql+psycopg://support_pilot:support_pilot@localhost:54330/support_pilot_test`
 
-可以通过 `SUPPORT_PILOT_TEST_DATABASE_URL` 覆盖。测试会清空项目表中的数据，因此测试服务使用独立数据库和临时文件系统，不能把该变量指向开发或生产数据库。
+可以通过 `SUPPORT_PILOT_TEST_DATABASE_URL` 覆盖。测试会清空项目表中的数据，因此测试服务使用独立数据库和临时文件系统，不能把该变量指向开发或生产数据库。Playwright 还会校验 `E2E_DATABASE_URL` 的数据库名必须严格等于 `support_pilot_test`，不满足时在迁移前直接终止。
 
 ## 文档
 
@@ -178,6 +181,9 @@ npm run build
 - [可恢复会话与工单幂等 ADR](./docs/adr/0005-recoverable-conversation-and-ticket-confirmation.md)
 - [本地 JWT 与人工工单闭环 ADR](./docs/adr/0006-local-jwt-and-human-ticket-workflow.md)
 - [SSE、OTLP 与容器交付 ADR](./docs/adr/0007-sse-console-otel-and-container-delivery.md)
+
+以下阶段学习说明保留对应阶段完成时的讲解与当时边界；当前验证口径以[最终证据快照](./docs/evaluation/final-evidence.md)为准。
+
 - [第二阶段学习说明](./docs/learning/stage-2-deterministic-baseline.md)
 - [第三阶段学习说明](./docs/learning/stage-3-hybrid-rag.md)
 - [第四阶段学习说明](./docs/learning/stage-4-agent-increment.md)

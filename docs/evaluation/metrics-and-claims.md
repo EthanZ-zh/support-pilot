@@ -12,7 +12,7 @@
 
 - 设计并实现 Provider 中立的 LangGraph 支持工作流，将意图/风险识别、混合 RAG、确定性业务工具、Answerability Gate、显式工单确认与人工接管串成可持久化闭环；在 80 条人工标注合成场景（91 个请求步骤）上通过 79 条，Intent macro-F1 1.000，安全升级 Recall 1.000，重复副作用与高风险误执行均为 0。
 - 基于 PostgreSQL/pgvector 实现关键词与向量双路召回、RRF、BGE Reranker、元数据过滤和 chunk 级引用；在 50 个可答 + 10 个无答案合成样本上，确定性与本地 BGE 基线的 Recall@5、MRR、nDCG@5、Answerability F1 均为 1.000，并保留同源小样本/阈值过拟合限制。
-- 构建 JWT/RBAC、多租户隔离、工单状态机、事务/幂等/乐观锁与审计，使用 React + SSE 展示真实节点 Trace、引用和人工处理；67 个后端测试覆盖率 93%，4 个前端测试及 lint/type/build 通过，并提供 Alembic 往返、OTLP 埋点、CI、Compose 与可复现演示脚本。
+- 构建 JWT/RBAC、多租户隔离、工单状态机、事务/幂等/乐观锁与审计，使用 React + SSE 展示真实节点 Trace、引用和人工处理；97 个后端测试覆盖率 93%，4 个前端单元测试及 1 条 Chromium 业务 E2E 通过，CI 还验证 Compose 构建、启动和前端反向代理探活。
 
 ## 指标证据索引
 
@@ -23,8 +23,10 @@
 | RAG 四项 1.000 | `docs/evaluation/stage-3-rag-evaluation.md` | 60 条同源合成样本 |
 | Qwen 7/7 冒烟 | `docs/evaluation/stage-4-qwen-smoke-evaluation.md` | 仅 7 条、调用 5 次 |
 | 0 重复副作用/高风险误执行 | Agent 机器报告 + PostgreSQL 并发测试 | 非生产流量 |
-| 67 tests / 93% | 2026-08-31 全量 pytest 记录 | local BGE 文件未计入常规覆盖 |
-| 4 frontend tests | Vitest + Testing Library | jsdom，不是真实浏览器 E2E |
+| 97 tests / 93% | 2026-09-10 全量 pytest 记录 | local BGE 文件未计入常规覆盖 |
+| 4 frontend tests | Vitest + Testing Library | jsdom 单元/组件层 |
+| 1 browser E2E | Playwright Chromium：客户提问到人工处理 | deterministic Provider、单浏览器、隔离测试库 |
+| Compose runtime | `main@7007b49` container job | CI runner 短时启动与探活，不代表生产稳定性 |
 
 ## 演示顺序（5–7 分钟）
 
@@ -38,5 +40,5 @@
 
 - 不声称"服务真实企业客户""线上准确率 98.75%""生产节省多少人力"；
 - 不把 Qwen macro-F1 写成 1.0——1.0 属于确定性 80 场景，Qwen 只有 7 条冒烟；
-- 不声称"已经生产部署""完整容器运行已验证"——GitHub Actions 已构建镜像，但没有启动整套 Compose 服务；
+- 不声称"已经生产部署"——GitHub Actions 已验证镜像构建、整套 Compose 启动与短时探活，但未验证生产配置、容量、可用性或长期稳定性；
 - 不声称"防住所有 Prompt Injection"——当前是规则预检、证据扫描和工具隔离的 MVP 防线。
