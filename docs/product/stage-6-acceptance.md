@@ -1,6 +1,6 @@
 # 第六阶段全栈体验验收
 
-状态：自动化验收通过，真实浏览器人工走查待记录
+状态：自动化验收通过，Chromium 真实浏览器 E2E 已记录
 
 ## 1. 业务目标与请求链路
 
@@ -32,7 +32,8 @@ React login → local JWT → POST /agent/resolve/stream
 
 - `npm run lint`：通过；
 - `npm run test`：2 个测试文件、4 个测试通过，覆盖跨 chunk SSE 解析、受控错误、客户实时轨迹和人工认领；
-- `npm run build`：TypeScript 与 Vite 生产构建通过，JS gzip 约 64.70 kB；
+- `npm run test:e2e`：1 条 Chromium E2E 通过，覆盖客户登录、真实 SSE 与引用、显式确认工单、支持人员认领并推进到 `in_progress`；
+- `npm run build`：TypeScript 与 Vite 生产构建通过，JS gzip 约 65 kB；
 - `pytest tests/integration/test_agent_api.py -q`：14 个集成测试通过，含真实 PostgreSQL 下 progress 顺序和流内前置条件错误；
 - `ruff` 与 `mypy`：新增后端流式实现通过。
 
@@ -42,4 +43,4 @@ React login → local JWT → POST /agent/resolve/stream
 - SSE 使用 POST + Fetch Stream，因此自实现了事件解析；不依赖只支持 GET 的原生 EventSource；
 - 用户关闭连接时数据库会回滚未提交运行，但当前没有显式的前端 AbortController；
 - 工单列表是最多 100 条的 MVP 队列，没有服务端游标分页、搜索或实时推送；
-- 已用 jsdom 验证关键交互，但尚未记录 Chrome/Edge 的人工端到端走查证据。
+- Playwright 当前只覆盖 Chromium 和 1 条主业务闭环，尚未覆盖 Firefox/WebKit、断网重连、SSE 取消和视觉回归。

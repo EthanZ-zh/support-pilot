@@ -13,7 +13,7 @@
 2. Agent 进度使用 POST Fetch Stream + SSE。后端直接转发 LangGraph `stream_mode="values"` 产生的新增 TraceEvent，持久化提交后才发送最终结果。
 3. FastAPI 和 SQLAlchemy 使用 OpenTelemetry 自动埋点，通过 OTLP/HTTP 导出；默认关闭，避免本地无 Collector 时产生噪声和失败重试。
 4. 保持模块化单体，Docker Compose 只编排 API、静态前端和 PostgreSQL/pgvector；不引入消息队列、Kubernetes 或独立 Agent 服务。
-5. CI 将后端、前端和容器构建拆成独立作业，以便快速定位失败域。
+5. CI 将后端、前端、浏览器 E2E 和容器运行态拆成独立作业，以便快速定位失败域。
 
 ## 替代方案
 
@@ -27,4 +27,4 @@
 - Fetch SSE 需要自行处理网络 chunk 边界和 error event，已由前端单元测试覆盖。
 - localStorage Token 有 XSS 风险，只作为本地演示方案；生产应采用 HttpOnly Cookie/BFF。
 - OTLP 需要外部 Collector 才能落地查看 Trace；启用与装配路径有自动化测试，但本阶段没有部署 Collector。
-- Compose 配置解析通过；本机镜像构建被 Docker Hub 网络超时阻断，真实 GitHub Actions Linux runner 已成功构建 API/前端镜像。CI 未启动整套 Compose 服务，不能声称容器运行已验证。
+- Compose 配置解析通过；本机镜像构建被 Docker Hub 网络超时阻断。2026-09-10 的 GitHub Actions Linux runner 已成功构建 API/前端镜像、启动整套 Compose，并验证 API、前端页面和 Nginx 到 API 的健康代理链路。该短时探活不代表生产部署、容量或长期稳定性验证。

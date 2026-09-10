@@ -41,5 +41,5 @@ LLM 只输出严格 Schema 的意图与参数候选，所有外部输入由 Pyda
 ### 当前最值得改的三个点？
 
 1. 将 RAG calibration/test 分离，加入真实公开文档、难负例和逐主张引用评测；
-2. 增加真实浏览器 E2E、SSE 取消/断线恢复和队列分页；
+2. 在现有 Chromium 主闭环 E2E 基础上增加 SSE 取消/断线恢复、队列分页和多浏览器覆盖；
 3. 用 OIDC + HttpOnly Cookie 替换本地 JWT/localStorage，并把 OTel 接入 Collector、指标与日志关联。

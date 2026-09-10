@@ -1,6 +1,6 @@
 # 第七阶段工程质量验收
 
-状态：通过；完整 Compose 运行仍是明确限制
+状态：通过；Compose 运行态已在 GitHub Actions 验证
 
 ## 已实现
 
@@ -9,24 +9,25 @@
 - [x] 后端 Dockerfile 使用非 root 用户和 frozen lock；
 - [x] 前端多阶段 Dockerfile 只交付 Nginx 静态产物，并关闭 SSE 代理缓冲；
 - [x] Compose 编排 API、前端、开发库和隔离测试库，依赖 healthcheck 启动；
-- [x] GitHub Actions 分离 backend、frontend、container 三条作业；
-- [x] CI 包含 Ruff、strict mypy、全量测试/覆盖率、迁移升级/漂移检查、前端 lint/test/build 和镜像构建；
+- [x] GitHub Actions 分离 backend、frontend、e2e、container 四条作业；
+- [x] CI 包含 Ruff、strict mypy、全量测试/覆盖率、迁移升级/漂移检查、前端 lint/test/build、Chromium E2E 和 Compose 运行态验证；
 - [x] PowerShell 演示脚本覆盖知识回答、引用、工单确认、人工认领与状态推进；
 - [x] Alembic 在隔离测试库完成 downgrade/upgrade 往返。
 
-## 验证证据（2026-08-31）
+## 验证证据（2026-09-10）
 
-- 后端：67 passed，语句覆盖率 93%，Ruff 与 strict mypy 通过；
+- 后端：97 passed，语句覆盖率 93%，Ruff 与 strict mypy 通过；
 - 前端：4 passed，ESLint 和 TypeScript/Vite 生产构建通过；
-- 迁移：`0006 → 0005 → 0006` 成功，`alembic check` 无漂移；
+- 浏览器：1 条 Chromium E2E 通过，最终工单状态断言为 `in_progress`；
+- 迁移：`alembic upgrade head` 与 `alembic check` 通过，无模型漂移；
 - Compose：`docker compose config --quiet` 成功，解析出 `postgres-test/postgres/api/frontend`；
 - 真实本地演示：知识 `answered`、3 条引用、工单推进到 `in_progress`；
-- 容器：本地两次 build 因 Docker Hub token 地址 TCP 超时失败；真实 GitHub Actions Linux runner 随后成功构建 API 和前端镜像。
-- CI：`main@cd6a726` 的 backend、frontend、container 三个作业全部成功。
+- 容器：本机构建因 Docker Hub token 地址 TCP 超时失败；GitHub Actions Linux runner 成功构建镜像、启动整套 Compose，并验证 API、前端及 Nginx 反向代理健康路径。
+- CI：`main@7007b49` 的 backend、frontend、e2e、container 四个作业全部成功。
 
 ## 剩余风险
 
-- API/前端镜像未在本机完成 build，CI 也未启动整套 Compose 服务；仍需执行并记录 `docker compose up -d` 的运行态验证；
+- API/前端镜像仍未在本机完成 build；CI 的短时启动与探活不能替代生产配置、容量和长期稳定性验证；
 - GitHub Actions 已在真实仓库 runner 执行；运行过程暴露 Alembic 数据库端口配置错误与 JWT 篡改测试的 Base64URL 跨平台不稳定性，均已修复并由最终绿色运行验证；
 - OTel 装配路径经过 mock 测试，尚未连接真实 Collector 查看 Span；
 - 当前只有 Trace，没有服务级 Prometheus 指标、日志关联和告警规则；
