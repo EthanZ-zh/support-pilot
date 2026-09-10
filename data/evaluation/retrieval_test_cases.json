@@ -1,0 +1,42 @@
+[
+  {"id":"holdout-auth-01","query":"接口分别返回 401 和 403 时，应如何区分认证失败与权限不足？","relevant_sources":["kb://exampleapi/guides/authentication"],"product_version":"v2"},
+  {"id":"holdout-auth-02","query":"协助排查 API 鉴权时，客户应该提供完整密钥还是脱敏信息？","relevant_sources":["kb://exampleapi/guides/authentication"],"product_version":"v2"},
+
+  {"id":"holdout-signature-01","query":"接收 Webhook 后，应基于哪一份请求体计算签名？","relevant_sources":["kb://exampleapi/guides/webhook-signatures"],"product_version":"v2"},
+  {"id":"holdout-signature-02","query":"怎样同时校验 X-ExampleAPI-Timestamp 并防止事件重放？","relevant_sources":["kb://exampleapi/guides/webhook-signatures"],"product_version":"v2"},
+
+  {"id":"holdout-rate-01","query":"遇到 429 后，客户端应优先遵循哪个响应头安排重试？","relevant_sources":["kb://exampleapi/reference/rate-limits"],"product_version":"v2"},
+  {"id":"holdout-rate-02","query":"瞬时限流与月度调用额度分别解决什么问题？","relevant_sources":["kb://exampleapi/reference/rate-limits"],"product_version":"v2"},
+
+  {"id":"holdout-export-01","query":"Pro 套餐创建异步导出任务后，如何轮询并下载结果？","relevant_sources":["kb://exampleapi/features/bulk-export"],"product_version":"v2","plan_code":"pro"},
+  {"id":"holdout-export-02","query":"Enterprise 用户调用导出接口得到 403，应检查哪些角色和功能权限？","relevant_sources":["kb://exampleapi/features/bulk-export"],"product_version":"v2","plan_code":"enterprise"},
+
+  {"id":"holdout-incident-01","query":"把客户错误关联到事故时，需要核对组件、区域和哪个时间范围？","relevant_sources":["kb://exampleapi/guides/incident-status"]},
+  {"id":"holdout-incident-02","query":"状态页没有事故记录时，为什么仍需收集脱敏 request_id？","relevant_sources":["kb://exampleapi/guides/incident-status"]},
+
+  {"id":"holdout-version-01","query":"排查版本问题时，为什么 API 路径和 SDK 主版本都要记录？","relevant_sources":["kb://exampleapi/reference/versioning"],"product_version":"v2"},
+  {"id":"holdout-version-02","query":"ExampleAPI 对破坏性变更提供多长时间的弃用通知？","relevant_sources":["kb://exampleapi/reference/versioning"],"product_version":"v2"},
+
+  {"id":"holdout-idem-01","query":"两个并发请求使用相同 Idempotency-Key 时，数据库如何避免重复资源？","relevant_sources":["kb://exampleapi/reference/idempotency"],"product_version":"v2"},
+  {"id":"holdout-idem-02","query":"复用幂等键但修改请求载荷为什么会冲突？","relevant_sources":["kb://exampleapi/reference/idempotency"],"product_version":"v2"},
+
+  {"id":"holdout-delivery-01","query":"Webhook 返回重定向或服务端错误后，平台会怎样安排后续投递？","relevant_sources":["kb://exampleapi/guides/webhook-delivery"],"product_version":"v2"},
+  {"id":"holdout-delivery-02","query":"消费者应该使用 event_id 还是 delivery_id 去除重复业务事件？","relevant_sources":["kb://exampleapi/guides/webhook-delivery"],"product_version":"v2"},
+
+  {"id":"holdout-region-01","query":"新加坡租户应连接哪个区域域名，能否按用户所在地猜测？","relevant_sources":["kb://exampleapi/reference/regions"],"product_version":"v2"},
+  {"id":"holdout-region-02","query":"租户创建完成后，主要数据驻留区域是否还能直接修改？","relevant_sources":["kb://exampleapi/reference/regions"],"product_version":"v2"},
+
+  {"id":"holdout-page-01","query":"使用 next_cursor 翻页时，过滤条件和排序参数能否改变？","relevant_sources":["kb://exampleapi/reference/pagination"],"product_version":"v2"},
+  {"id":"holdout-page-02","query":"cursor 为什么应被当作不透明值，什么时候表示分页结束？","relevant_sources":["kb://exampleapi/reference/pagination"],"product_version":"v2"},
+
+  {"id":"holdout-negative-01","query":"ExampleAPI 的电子发票抬头和税率如何配置？","relevant_sources":[],"answerable":false},
+  {"id":"holdout-negative-02","query":"企业 SAML 登录的 ACS URL 和证书轮换步骤是什么？","relevant_sources":[],"answerable":false},
+  {"id":"holdout-negative-03","query":"Go SDK 内存泄漏在哪个版本修复？","relevant_sources":[],"answerable":false},
+  {"id":"holdout-negative-04","query":"审计日志默认保存几年，能否导出到对象存储？","relevant_sources":[],"answerable":false},
+  {"id":"holdout-negative-05","query":"自定义域名需要配置哪些 DNS 记录？","relevant_sources":[],"answerable":false},
+  {"id":"holdout-negative-06","query":"如何批量删除终端用户的个人资料并证明合规？","relevant_sources":[],"answerable":false},
+  {"id":"holdout-negative-07","query":"平台支持哪些消息队列协议和消费组参数？","relevant_sources":[],"answerable":false},
+  {"id":"holdout-negative-08","query":"文件上传的病毒扫描限制和隔离时长是多少？","relevant_sources":[],"answerable":false},
+  {"id":"holdout-negative-09","query":"怎样配置移动端推送证书与通知模板？","relevant_sources":[],"answerable":false},
+  {"id":"holdout-negative-10","query":"专属实例的 CPU、内存和自动扩容上限是多少？","relevant_sources":[],"answerable":false}
+]

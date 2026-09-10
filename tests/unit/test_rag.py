@@ -1,4 +1,8 @@
+import importlib.util
+import json
 import math
+import sys
+from pathlib import Path
 from uuid import UUID
 
 import pytest
@@ -124,3 +128,36 @@ def test_binary_metrics_report_answerability_errors() -> None:
         "false_negative": 1,
         "true_negative": 1,
     }
+
+
+def test_retrieval_calibration_and_holdout_sets_are_disjoint() -> None:
+    calibration_path = Path("data/evaluation/retrieval_calibration_cases.json")
+    holdout_path = Path("data/evaluation/retrieval_test_cases.json")
+
+    assert calibration_path.exists()
+    assert holdout_path.exists()
+    calibration = json.loads(calibration_path.read_text(encoding="utf-8"))
+    holdout = json.loads(holdout_path.read_text(encoding="utf-8"))
+    calibration_ids = {case["id"] for case in calibration}
+    holdout_ids = {case["id"] for case in holdout}
+
+    assert len(calibration) == 60
+    assert len(holdout) == 30
+    assert calibration_ids.isdisjoint(holdout_ids)
+    assert sum(case.get("answerable", True) for case in holdout) == 20
+
+
+def test_retrieval_evaluation_defaults_to_holdout_set(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "evaluate_retrieval", Path("scripts/evaluate_retrieval.py")
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr(sys, "argv", ["evaluate_retrieval.py"])
+
+    args = module.parse_args()
+
+    assert args.dataset == Path("data/evaluation/retrieval_test_cases.json")

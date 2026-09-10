@@ -93,6 +93,18 @@ class HybridRetrievalService:
             ),
         )[: request.top_k]
         decision = self._answerability(reranked)
+        selected = reranked[:1] if decision.answerable else []
+        if decision.reason == "insufficient_relevance":
+            multi_decision, selected = self._multi_evidence_answerability(
+                request.query,
+                reranked,
+            )
+            if multi_decision is not None:
+                decision = multi_decision
+        selected_ids = {candidate.row.chunk_id for candidate in selected}
+        ordered = selected + [
+            candidate for candidate in reranked if candidate.row.chunk_id not in selected_ids
+        ]
         return KnowledgeSearchResponse(
             query=request.query,
             embedding_provider=self.embedding_provider.provider_name,
@@ -101,7 +113,7 @@ class HybridRetrievalService:
             reranker_model=self.reranker_provider.model_name,
             filters_applied=request.filters,
             decision=decision,
-            hits=[self._to_hit(candidate) for candidate in reranked],
+            hits=[self._to_hit(candidate) for candidate in ordered],
         )
 
     def _answerability(self, candidates: list[FusedCandidate]) -> AnswerabilityDecision:
@@ -129,9 +141,52 @@ class HybridRetrievalService:
         return AnswerabilityDecision(
             answerable=reason == "sufficient_evidence",
             reason=reason,
-            evidence_count=len(relevant),
+            evidence_count=1 if reason == "sufficient_evidence" else len(relevant),
             top_score=top_score,
             has_conflict=has_conflict,
+        )
+
+    def _multi_evidence_answerability(
+        self,
+        query: str,
+        candidates: list[FusedCandidate],
+    ) -> tuple[AnswerabilityDecision | None, list[FusedCandidate]]:
+        grouped: dict[tuple[UUID, str, str], list[FusedCandidate]] = {}
+        for candidate in candidates:
+            topic = candidate.row.metadata.get("topic_code")
+            answer = candidate.row.metadata.get("answer_key")
+            if isinstance(topic, str) and isinstance(answer, str):
+                grouped.setdefault((candidate.row.document_id, topic, answer), []).append(candidate)
+        groups = [group[:3] for group in grouped.values() if len(group) >= 2]
+        if not groups:
+            return None, []
+        scores = self.reranker_provider.score(
+            query,
+            [
+                "\n\n".join(self._rerank_text(candidate.row) for candidate in group)
+                for group in groups
+            ],
+        )
+        qualifying = [
+            (score, group)
+            for score, group in zip(scores, groups, strict=True)
+            if score >= self.answerability_threshold
+        ]
+        if not qualifying:
+            return None, []
+        qualifying.sort(key=lambda item: -item[0])
+        selected_score, selected = qualifying[0]
+        conflicting_candidates = [candidate for _score, group in qualifying for candidate in group]
+        has_conflict = self._has_conflict(conflicting_candidates)
+        return (
+            AnswerabilityDecision(
+                answerable=not has_conflict,
+                reason="conflicting_evidence" if has_conflict else "sufficient_evidence",
+                evidence_count=len(selected),
+                top_score=selected_score,
+                has_conflict=has_conflict,
+            ),
+            [] if has_conflict else selected,
         )
 
     @staticmethod

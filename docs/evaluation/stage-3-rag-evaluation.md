@@ -1,14 +1,15 @@
 # 第三阶段 RAG 离线评测报告
 
 - 运行时间：2026-08-30（Asia/Shanghai）
-- 数据集：`data/evaluation/retrieval_cases.json`
+- 校准集：`data/evaluation/retrieval_calibration_cases.json`
+- 独立测试集：`data/evaluation/retrieval_test_cases.json`（实现冻结后首次运行）
 - 数据性质：人工标注的合成 ExampleAPI 问题，不含真实企业数据
 - 总样本：60（50 个可答检索正例，10 个无答案/越界负例）
 - K：5
 - 数据库：PostgreSQL 16 + pgvector 0.8.6 镜像
 - 执行设备：本地 CPU
 
-## 结果
+## 校准集历史结果
 
 | Provider | Embedding | Reranker | Recall@5 | MRR | nDCG@5 | Answerability P/R/F1 | 错误数 |
 |---|---|---|---:|---:|---:|---:|---:|
@@ -16,6 +17,17 @@
 | local_bge | BAAI/bge-small-zh-v1.5 | BAAI/bge-reranker-base | 1.000 | 1.000 | 1.000 | 1.000 / 1.000 / 1.000 | 0 |
 
 Answerability 混淆矩阵（两种 Provider 本次相同）：TP=50、FP=0、FN=0、TN=10。
+
+## 独立测试集结果
+
+2026-09-10 将原 60 条数据固定为 calibration，新增 ID 不重叠的 30 条 holdout（20 个可答、10 个不可答）。多证据实现在首次 holdout 前已提交冻结，没有根据 holdout 失败调整阈值。
+
+| Provider | Recall@5 | MRR | nDCG@5 | Answerability P/R/F1 | TP/FP/FN/TN |
+|---|---:|---:|---:|---:|---:|
+| deterministic | 1.000 | 1.000 | 1.000 | 1.000 / 0.800 / 0.889 | 16/0/4/10 |
+| local_bge | 1.000 | 0.975 | 0.982 | 1.000 / 0.950 / 0.974 | 19/0/1/10 |
+
+两种 Provider 在 holdout 上都没有误放行。`local_bge` 剩余的一条失败是 `holdout-auth-01`，系统因相关性不足安全升级；这是可答性漏放，不是无证据回答。
 
 ## 可复现命令
 
@@ -30,6 +42,8 @@ uv run python scripts/ingest_knowledge.py --provider local_bge
 uv run python scripts/evaluate_retrieval.py --provider local_bge
 ```
 
+默认评测命令现在使用独立测试集；如需重现历史校准结果，显式传入 `--dataset data/evaluation/retrieval_calibration_cases.json`。
+
 ## 评测过程中发现并修复的问题
 
 1. `CrossEncoder.predict()` 已输出 0–1 概率，Provider 再做 sigmoid 会把所有低相关分数抬到约 0.5，造成 10/10 无答案负例误放行。移除重复 sigmoid 后，真实 BGE 的 FP 从 10 降为 0。
@@ -42,7 +56,7 @@ uv run python scripts/evaluate_retrieval.py --provider local_bge
 - 满分主要说明当前实现能稳定区分这 10 篇合成文档及其对应问题，证明链路可运行、可回归，不是生产准确率。
 - 每个正例只标注一个相关 `source_uri`，因此 nDCG 的难度有限；后续需要多相关片段、近似干扰文档和跨版本冲突。
 - 目前可验证“返回引用属于标注相关来源”，但尚未生成最终答案，因此不能宣称回答忠实度或逐主张引用正确率已达标。
-- Gate 阈值在同一小样本上校准和报告，存在过拟合风险。下一版应拆分 calibration/test 集并扩大真实公开数据。
+- calibration/test 已拆分，holdout 结果也表明同源校准集满分不能代表改写问题的泛化。数据仍是小规模合成集，需继续扩大公开数据和人工标注样本。
 
 ## 下一轮评测缺口
 

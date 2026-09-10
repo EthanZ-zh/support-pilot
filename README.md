@@ -22,7 +22,9 @@ JWT/RBAC、人工接管 API、状态机、幂等反馈、领域级多轮恢复�
 
 知识检索链路：
 
-`POST /api/v1/knowledge/search → metadata filters → keyword/vector recall → RRF → rerank → Answerability Gate → citations`
+`POST /api/v1/knowledge/search → metadata filters → keyword/vector recall → RRF → rerank → single/multi-evidence Answerability Gate → citations`
+
+当单个 chunk 都未达到门控阈值时，系统仅会将同文档、同主题、同答案版本的最多 3 个候选聚合重评分，不会降低 Provider 阈值。通过后仍返回抽取式原文和每个 chunk 的独立引用；任一选中证据命中 Prompt Injection 都会整体安全升级。
 
 Agent 链路：
 
@@ -128,6 +130,8 @@ uv run python scripts/ingest_knowledge.py --provider local_bge
 uv run python scripts/evaluate_retrieval.py --provider local_bge
 ```
 
+默认检索评测使用冻结后独立 holdout；原 60 条同源数据仅作 calibration 和回归。完整指标、混淆矩阵与限制见[ RAG 离线评测](./docs/evaluation/stage-3-rag-evaluation.md)。
+
 可通过 `SUPPORT_PILOT_MODEL_CACHE_DIR` 覆盖模型目录。真实模型首次下载和 CPU 重排较慢；确定性 Provider 只用于 CI 和流程回归。
 
 ## 工单通知与验证边界
@@ -136,7 +140,7 @@ uv run python scripts/evaluate_retrieval.py --provider local_bge
 
 SMTP 密码与 Webhook URL 使用 `SecretStr` 保存；认证 SMTP 强制启用证书和主机名校验，Webhook 强制 HTTPS、显式主机白名单并拒绝非公网 IP 与环境代理。自动化测试只使用 Mock/Fake 外部边界，不代表真实邮件或群机器人已经完成线上投递验证。
 
-当前验证结果为 97 项后端测试、4 项前端单元测试和 1 条 Chromium 业务 E2E 通过；Alembic upgrade/check、前端类型检查/lint/build、Docker Compose 启动与探活及 GitHub Actions 均通过。浏览器 E2E 使用确定性 Provider、隔离的 `support_pilot_test` 数据库和 `log` 通知通道，不会调用付费模型或外部通知服务。
+当前验证结果为 101 项后端测试（覆盖率 93%）通过；4 项前端单元测试和 1 条 Chromium 业务 E2E 为上一次全栈验收证据，待本分支 CI 再次确认。Alembic upgrade/check 已通过。浏览器 E2E 使用确定性 Provider、隔离的 `support_pilot_test` 数据库和 `log` 通知通道，不会调用付费模型或外部通知服务。
 
 ## 验证
 
